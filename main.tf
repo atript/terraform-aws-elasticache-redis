@@ -13,27 +13,6 @@ module "label" {
 #
 # Security Group Resources
 #
-resource "aws_security_group" "default" {
-  count  = "${var.enabled == "true" ? 1 : 0}"
-  vpc_id = "${var.vpc_id}"
-  name   = "${module.label.id}"
-
-  ingress {
-    from_port       = "${var.port}"              # Redis
-    to_port         = "${var.port}"
-    protocol        = "tcp"
-    security_groups = ["${var.security_groups}"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = "${module.label.tags}"
-}
 
 resource "aws_elasticache_subnet_group" "default" {
   count      = "${var.enabled == "true" ? 1 : 0}"
@@ -61,7 +40,7 @@ resource "aws_elasticache_replication_group" "default" {
   availability_zones            = ["${slice(var.availability_zones, 0, var.cluster_size)}"]
   automatic_failover_enabled    = "${var.automatic_failover}"
   subnet_group_name             = "${aws_elasticache_subnet_group.default.name}"
-  security_group_ids            = ["${aws_security_group.default.id}"]
+  security_group_ids            = ["${var.security_groups}"]
   maintenance_window            = "${var.maintenance_window}"
   notification_topic_arn        = "${var.notification_topic_arn}"
   engine_version                = "${var.engine_version}"
